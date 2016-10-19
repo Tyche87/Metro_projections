@@ -51,7 +51,19 @@
         }
         h2 {
             padding: 0px;
+            bottom: 0%;
             margin: 0px;
+            font-size: 1.5em;
+            color: whitesmoke
+        }
+        h4{ 
+            position: absolute;
+            bottom: 1%;
+            left: 1%;
+            margin: 0px;
+            font-size: .5em;
+            color: whitesmoke;
+            
         }
         .info{
             left: 40px;
@@ -134,7 +146,7 @@
             font-size: .5em;
             color: whitesmoke; 
         }
-        
+
         .bar{
             fill: steelblue;
         }
@@ -164,6 +176,9 @@
     </div>
     <div id="panel">
     <h1>Metro Area Projected Stats</h1>
+        <h4>Tyler Hegwood 2016 - Data: Metropolitan Council</h4>
+        
+    
     <div id='info'></div>    
     
         <div id ='ui-controls2'>    
@@ -179,6 +194,7 @@
     <div id='chart-container'  style="width: 20%; height:37%">           
     <div class='chart'></div>    
     </div>
+        
     </div>
 
     
@@ -525,17 +541,7 @@
                 
             drawChart(data)    
                 
-//            data.attr("display", function(d){
-//                    return "data";
-//                })    
-        
-//            x.domain(d3.extent(chartData, function(d) { return data; }));
-        
-//
-//           d3.select('.chart')
-//                .update.data(data)
-                //.datum(layerData)
-//               .attr("d", line);
+
                         
             }
 //        
