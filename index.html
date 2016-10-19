@@ -1,0 +1,546 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset=utf-8 />
+    <title>Metro Area Projected Economic Statistics</title>
+    <meta name='viewport' content='initial-scale=1,maximum-scale=1,user-scalable=no' />
+    <script src='http://d3js.org/d3.v3.js'></script>
+    <script src="https://d3js.org/d3-ease.v1.min.js"></script>
+    <script src="https://code.jquery.com/jquery-1.11.2.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/4.1.2/papaparse.min.js"></script>
+    <script src="http://cdn.leafletjs.com/leaflet/v0.7.7/leaflet.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/simple-statistics/1.0.0/simple_statistics.min.js"></script>
+    
+    <link rel="stylesheet" href="http://cdn.leafletjs.com/leaflet/v0.7.7/leaflet.css" />
+    <link href='http://fonts.googleapis.com/css?family=Lato' rel='stylesheet' type='text/css'>
+
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background: whitesmoke;
+            font-family: Lato, sans-serif;
+            color: #0D0000;
+        }
+
+        #map {
+            position: absolute;
+            width: 100%;
+            top: 0;
+            bottom: 0;
+        } 
+        #panel {
+            position: absolute;
+            top: 1%;
+            left: 3%;
+            width: 25%;
+            height: 46%;
+            background: rgba(75,75,75,0.8);
+        }
+        h1 {
+            width: 91.5%;
+            top: 10px;
+            left: 60px;
+            padding: 8px 15px;
+            margin: 10;
+            color: whitesmoke;
+            font-size: 1.5em;
+            background-color: rgba(15,86,226,0.8);
+            
+        }
+        h2 {
+            padding: 0px;
+            margin: 0px;
+        }
+        .info{
+            left: 40px;
+            top: 23%;
+            color: whitesmoke;
+            margin: auto 10% 20% auto;
+            width: 100%;
+            padding: 6px 10px;
+            
+            font-size: 1em;
+            text-align: left;
+        }
+        .info h3{
+            margin: 0;
+            text-align: left;
+        }
+        .legend{
+            padding: 6px 8px;
+            font-size: 1em;
+            background: rgba(75,75,75,0.8);
+            color: whitesmoke;
+            box-shadow: 0 0 15px rgba(0,0,0,0.2);
+            width: 184px;
+        }
+        .legend h3{
+            font-size: 1.1em;
+            font-weight: bold;
+            line-height: 1em;
+            color: whitesmoke;
+            margin: 0;
+        }
+        .legend ul{
+            list-style-type: none;
+            padding: 0;
+            margin: 12px 4px 0;
+        }
+        .legend li{
+            height: 22px;
+        }
+        .legend span {
+            width: 30px;
+            height: 20px;
+            float: left;
+            margin-right: 10px;
+        }
+        #ui-controls{
+            width: 160px;
+            background: rgba(75,75,75,0.8);
+            box-shadow: 0 0 15px rgba(0,0,0,0.2);
+            padding: 8px 25px 8px 15px;
+            color: whitesmoke;
+        }
+        #ui-controls .min{
+            float: left;
+        }
+        #ui-controls .max{
+            float: right;
+        }
+        #ui-controls2 {
+            position: absolute;
+            top: 175px;
+            left: 4%;
+            color: whitesmoke;
+        }
+        .year-slider{
+            width: 100%;
+        }
+        label{
+            font-size: 1.1em;
+            font-weight: bold;
+        }
+        .leaflet-popup-content {
+            max-width: 160px;   
+        }
+        #chart-container { 
+            position: absolute;
+            bottom: 0%;
+            height: 100%;
+            width: 100%;    
+            font-size: .5em;
+            color: whitesmoke; 
+        }
+        
+        .bar{
+            fill: steelblue;
+        }
+
+        .chart div {
+            font: 10px sans-serif;
+            background-color: rgba(15,86,226,0.8);
+            text-align: right;
+            padding: 3px;
+            margin: 1px;
+            width: 100px;
+            color: white;
+        }
+
+
+    </style>
+</head>
+
+<body>
+    
+    <div id='map'></div>
+        <div id="ui-controls">
+        <label><span class="min">2010</span><span class="max">2040</span>
+            <input type= "range" min = "2010", max = "2040",
+                   value = "2010", step= "10", class="year-slider">
+        </label>
+    </div>
+    <div id="panel">
+    <h1>Metro Area Projected Stats</h1>
+    <div id='info'></div>    
+    
+        <div id ='ui-controls2'>    
+        <label> Economic Indicator:</label>
+        <select id = "indicator"> 
+            <option value="EMP_" >Employment Density</option>
+            <option value="HOUSE_" >Household Density</option>
+            <option value="POP_" selected>Population Density</option>
+<!--            <option value="EMP_" >Employment Growth %</option>-->
+    </select></div>
+        
+    
+    <div id='chart-container'  style="width: 20%; height:37%">           
+    <div class='chart'></div>    
+    </div>
+    </div>
+
+    
+    
+    <script>
+        
+        
+        
+         // instantiate the Leaflet map
+        
+        var bounds = L.latLngBounds(
+        [44.407241, -94.344154], // Southwest coordinates
+        [45.515434, -92.512184]  // Northeast coordinates
+        );
+                
+        var options = {
+            center: [45.0, -93.60429],
+            zoom: 9,
+            minZoom: 9,
+            maxZoom: 15,
+            dragging: true,
+            zoomControl: true,
+        }
+        var map = L.map('map', options).setMaxBounds(bounds)
+         
+    var tiles  = L.tileLayer('http://stamen-tiles-{s}.a.ssl.fastly.net/toner-lite/{z}/{x}/{y}.{ext}', {
+	attribution: 'Map tiles by <a href="http://stamen.com">Stamen Design</a>, <a href="http://creativecommons.org/licenses/by/3.0">CC BY 3.0</a> &mdash; Map data &copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>',
+	subdomains: 'abcd',
+	minZoom: 0,
+	maxZoom: 20,
+	ext: 'png'
+});
+        
+        map.addLayer(tiles);
+        
+        var dataLayer,
+            year = "2010"
+            indicator = "POP_"
+            
+        // declare global variables, loading both GeoJson and CSV data file into the script
+        $.getJSON("metro_stats_projected.json", function(counties){
+                    
+        
+        // function to draw the geometries to the map
+            dataLayer = L.geoJson(counties, {
+                style: function(feature){
+                    return {
+                        color: 'black',
+                        weight: 1,
+                        fillOpacity: .7,
+                        fillColor: 'white'
+                    };
+                    
+                }
+            
+            }).addTo(map);
+            
+//        $.getJSON("LRT_line.geojson", function(LRT){
+                    
+        
+        // function to draw the geometries to the map
+//            transitLayer = L.geoJson(LRT, {
+//                style: function(feature){
+//                    return {
+//                        color: '#D59006',
+//                        weight: 3,
+//                        fillOpacity: .7,
+//                    };
+//                    
+//                }
+//            
+//            }).addTo(map).bringToFront();
+//                });
+    
+            
+        // functions called to update the map with all visual information and UI
+            
+            
+            //drawChart();
+            drawLegend();
+            createSliderUI();
+            drawInfo();
+            updateMap();
+            
+            
+        });
+        
+        
+        var labels = { 
+            "EMP_": "Employment (growth)",
+            "HOUSE_": "Household (growth)",
+            "POP_": "Population (growth)",
+            "TOT_": "Total",
+        };
+        
+        
+        // function to update the map (once for the initial data view and then again to update the map per the user's request). Also Including mouseover event to highlight layer, and create popup displaying county name, year and corresponding unemployment rate
+        
+        function updateMap() {
+            
+            var breaks = getClassBreaks();
+            
+            dataLayer.eachLayer(function(layer){
+                
+                var props = layer.feature.properties;
+                var areaSqMi = (layer.feature.properties["Shape_Area"]*(.0000003821)).toFixed(1)
+                var rate = (layer.feature.properties[indicator + year]/areaSqMi).toFixed(0)
+                
+                
+                layer.setStyle({
+                    fillColor : getColor(Number(rate), breaks)
+                });
+                
+                
+                layer.on('mouseover', function(){
+                        layer.setStyle({
+                        color: '#AAA909',
+                        weight: 3,
+                        
+                        }).bringToFront();
+                });
+                layer.on('mouseout', function(){
+                        layer.setStyle({
+                        color: 'black',
+                        weight: 1    
+                        })
+                });
+                
+                layer.bindPopup("<b>"+props["CTU_NAME"] + "<br></b>" +
+                                year + ": " + Number(rate).toLocaleString());
+                
+                layer.on('mouseover', function(){
+                        dataLayer.on('mouseover',function(){
+                        $(".info").show();      
+                        });
+                
+                var layerData = getChartData(props);
+                updateChart(layerData);    
+                updateInfo(props, areaSqMi);    
+                });
+                    
+            });
+            
+             updateLegend(breaks);
+        }
+        
+
+
+                
+        function getClassBreaks(){
+            
+            var values = [];
+            
+            dataLayer.eachLayer(function(layer){
+                
+                var areaSqMi = (layer.feature.properties["Shape_Area"]*(.0000003821)).toFixed(1)
+                
+                    var value = (layer.feature.properties[indicator + year]/areaSqMi).toFixed(0)
+                    values.push(Number(value));
+                
+                //console.log(value)
+                    
+            });
+            
+            var breaks = ss.quantile(values, [0, 0.2, 0.4, 0.6, 0.801, 1]);
+            
+            return breaks;
+            
+        }; 
+        
+        // function to get the color value using 
+        function getColor(d, breaks){
+            
+            if(d <= breaks[1]){
+                return '#FFFFFF';
+            }else if (d <= breaks[2]) {
+                return '#B4C4FD';
+            }else if (d <= breaks[3]) {
+                return '#7B97FF';
+            }else if (d <= breaks[4]) {
+                return '#4970FF';
+            }else if (d <= breaks[5]) {
+                return '#0D41FF'
+            }
+        
+        }
+        
+
+
+        // function to draw the legend using global variable 'breaks' from getClassBreaks above  
+        function drawLegend(breaks){
+            
+            var legendControl = L.control({position: 'topright'});
+            
+            legendControl.onAdd = function(map){
+                
+                var div = L.DomUtil.create('div', 'legend');
+                
+                return div;
+            };
+            
+            legendControl.addTo(map);
+            
+        }
+        
+        function updateLegend(breaks){
+            var legend = $('.legend').html("<h3><span>2010</span>Legend</h3><ul>");
+            
+            for(var i = 0; i < breaks.length-1; i++){
+                
+            var color = getColor(breaks[i + 1], breaks);
+                $('.legend ul').append('<li><span style ="background:' + color + '"></span> ' + 
+                    breaks[i] + ' &mdash; ' +
+                    breaks[i +1] + '</li>');
+            }
+            
+            legend.append("</ul>")
+        }
+        
+
+        //function to create the UI silder where the user's year slider data is sent to the updateMap function via 'year' to select and dislplay the correct data per year   
+        function createSliderUI(breaks){
+            
+            var sliderControl = L.control( {position: 'topright'} );
+            
+                sliderControl.onAdd = function(map){
+                
+                    var slider = L.DomUtil.get("ui-controls");
+                
+                        L.DomEvent.addListener(slider, 'mousedown',function(e){
+                        
+                            L.DomEvent.stopPropagation(e);
+                        
+                        });
+                
+                    return slider;
+                
+                }
+            
+        sliderControl.addTo(map);
+            
+            $(".year-slider").on("input change", function(){
+                //user input assigned to 'year'
+                year = $(this).val();
+                updateMap(breaks);
+                //updateLegend(breaks);
+                $(".legend h3 span").html(year);
+            });
+                        
+                   
+            $('select[id="indicator"]').change(function(){
+                indicator = $(this).val();
+                updateMap(breaks, indicator);
+                //updateLegend(breaks);
+            })
+            
+        }
+        
+        
+    
+        // create info box, with content manipulated by the updateInfo function and fired in the drawMap function with mouseover UI event. 
+        function drawInfo(){
+            
+            var info = L.control({position: 'topleft'});
+            
+            info.onAdd = function(map) {
+                
+                var div = L.DomUtil.create('div', 'info');
+                
+                return div;
+            }
+            
+            info.addTo(map);
+            $(".info").hide();
+        }
+        
+        // possibly an inefficient method to re-populate the info box from the counties layer brought in from the drawMap function     
+        function updateInfo(props, areaSqMi){
+            
+        var html =  "<h2>"+props["CTU_NAME"]+ "</h2>"+
+                        "2010: <b>"+ (props[indicator + "2010"]/areaSqMi).toFixed(0) +"</b><br>"+
+                        "2020: <b>"+ (props[indicator + "2020"]/areaSqMi).toFixed(0) +" (" + (((props[indicator +"2020"]-props[indicator +"2010"])/props[indicator +"2010"])*100).toFixed(1) +"%)</b><br>"+
+                        "2030: <b>"+ (props[indicator +"2030"]/areaSqMi).toFixed(0) +" (" + (((props[indicator +"2030"]-props[indicator +"2020"])/props[indicator +"2020"])*100).toFixed(1) +"%)</b><br>"+
+                        "2040: <b>"+ (props[indicator +"2040"]/areaSqMi).toFixed(0) +" (" + (((props[indicator +"2040"]-props[indicator +"2030"])/props[indicator +"2030"])*100).toFixed(1) +"%)</b><br>"
+
+                        
+            $(".info").html(html);
+        };
+        
+        function getChartData(props){
+            //var props = feature.properties;
+            
+            //var props = layer.feature.properties;
+          
+            var chartData = [];
+
+            for(var i = 2010; i <= 2040; i += 10) {
+                chartData.push(Number(props[indicator + i]));
+            }
+            return chartData; 
+            
+//            drawChart(chartData);
+            //updateChart(chartData)
+        
+        }
+        
+        function drawChart(data){ 
+            
+
+            var x = d3.scale.linear()
+                .domain([0, d3.max(data)])
+                .range([0, 300]);
+            
+            var bars = d3.select(".chart")
+                .selectAll("div")
+                .data(data)
+                .enter().append("div")
+                .style("width", function(d) { return x(d) + "px"; })
+                .text(function(d) { return d; });
+
+        };
+        
+        function updateChart(layerData){
+            
+            var data = layerData
+                console.log(data)
+                    
+                
+            var x = d3.scale.linear()
+                //.domain([0, d3.max(data)])
+                //.range([0, 300]);  
+            
+//            var t = d3.transition()
+//                    .duration(70)
+//                    .ease(d3.easeLinear);
+                
+            d3.select(".chart")
+                .style("width", function(d) { return x(d) + "px"; })
+                .text(function(d) { return d; })
+                
+                
+
+                
+                
+            drawChart(data)    
+                
+//            data.attr("display", function(d){
+//                    return "data";
+//                })    
+        
+//            x.domain(d3.extent(chartData, function(d) { return data; }));
+        
+//
+//           d3.select('.chart')
+//                .update.data(data)
+                //.datum(layerData)
+//               .attr("d", line);
+                        
+            }
+//        
+
+            
+    </script>
+    </body>
+    </html>
