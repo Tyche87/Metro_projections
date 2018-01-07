@@ -15,8 +15,7 @@
     <meta charset=utf-8 />
     <title>Metro Area Projected Economic Statistics</title>
     <meta name='viewport' content='initial-scale=1,maximum-scale=1,user-scalable=no' />
-    <script src='http://d3js.org/d3.v3.js'></script>
-    <script src="https://d3js.org/d3-ease.v1.min.js"></script>
+    <script src='https://d3js.org/d3.v3.js'></script>
     <script src="https://code.jquery.com/jquery-1.11.2.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/4.1.2/papaparse.min.js"></script>
     <script src="http://cdn.leafletjs.com/leaflet/v0.7.7/leaflet.js"></script>
@@ -64,6 +63,13 @@
             bottom: 0%;
             margin: 0px;
             font-size: 1.5em;
+            color: whitesmoke
+        }
+        h3 {
+            padding: 0px;
+            bottom: 0%;
+            margin: 0 0 0 60%;
+            font-size: .8em;
             color: whitesmoke
         }
         h4{ 
@@ -133,8 +139,10 @@
             float: right;
         }
         #ui-controls2 {
+            width: 300px;
+            height: 100px;
             position: absolute;
-            top: 175px;
+            top: 45%;
             left: 4%;
             color: whitesmoke;
         }
@@ -142,7 +150,7 @@
             width: 100%;
         }
         label{
-            font-size: 1.1em;
+            font-size: 1.0em;
             font-weight: bold;
         }
         .leaflet-popup-content {
@@ -186,13 +194,14 @@
     </div>
     <div id="panel">
     <h1>Metro Area Projected Stats</h1>
+    <h3>(Density Growth Rate)</h3>   
     <h4>Tyler Hegwood 2016 - Data: Metropolitan Council</h4>
         
     
     <div id='info'></div>    
     
-        <div id ='ui-controls2'>    
-        <label> Economic Indicator:</label>
+        <div id ='ui-controls2'>
+            <label> Economic Indicator: (Raw number)</label>
         <select id = "indicator"> 
             <option value="EMP_" >Employment Density</option>
             <option value="HOUSE_" >Household Density</option>
@@ -211,8 +220,7 @@
     
     <script>
         
-        
-        
+           
          // instantiate the Leaflet map
         
         var bounds = L.latLngBounds(
@@ -484,7 +492,7 @@
         // possibly an inefficient method to re-populate the info box from the counties layer brought in from the drawMap function     
         function updateInfo(props, areaSqMi){
             
-        var html =  "<h2>"+props["CTU_NAME"]+ "</h2>"+
+        var html =  "<h2>"+props["CTU_NAME"]+ "</h2>"+ 
                         "2010: <b>"+ (props[indicator + "2010"]/areaSqMi).toFixed(0) +"</b><br>"+
                         "2020: <b>"+ (props[indicator + "2020"]/areaSqMi).toFixed(0) +" (" + (((props[indicator +"2020"]-props[indicator +"2010"])/props[indicator +"2010"])*100).toFixed(1) +"%)</b><br>"+
                         "2030: <b>"+ (props[indicator +"2030"]/areaSqMi).toFixed(0) +" (" + (((props[indicator +"2030"]-props[indicator +"2020"])/props[indicator +"2020"])*100).toFixed(1) +"%)</b><br>"+
@@ -554,6 +562,7 @@
 
                         
             }
+   
 //        
 
             
