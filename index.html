@@ -14,15 +14,15 @@
 <head>
     <meta charset=utf-8 />
     <title>Metro Area Projected Economic Statistics</title>
-    <meta name='viewport' content='initial-scale=1,maximum-scale=1,user-scalable=no' />
+    <meta name='viewport' content='initial-scale=1,maximum-scale=1,user-scalable=no'/>
     <script src='https://d3js.org/d3.v3.js'></script>
     <script src="https://code.jquery.com/jquery-1.11.2.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/leaflet.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/4.1.2/papaparse.min.js"></script>
-    <script src="http://cdn.leafletjs.com/leaflet/v0.7.7/leaflet.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/simple-statistics/1.0.0/simple_statistics.min.js"></script>
     
-    <link rel="stylesheet" href="http://cdn.leafletjs.com/leaflet/v0.7.7/leaflet.css" />
-    <link href='http://fonts.googleapis.com/css?family=Lato' rel='stylesheet' type='text/css'>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@0.7.7/dist/leaflet.css" />
+    <link href='https://fonts.googleapis.com/css?family=Lato' rel='stylesheet' type='text/css'>
 
     <style>
         body {
@@ -39,6 +39,7 @@
             top: 0;
             bottom: 0;
         } 
+        
         #panel {
             position: absolute;
             top: 1%;
@@ -47,6 +48,7 @@
             height: 46%;
             background: rgba(75,75,75,0.8);
         }
+
         h1 {
             width: 91.5%;
             top: 10px;
@@ -80,6 +82,9 @@
             font-size: .5em;
             color: whitesmoke;
             
+        }
+        .leaflet-popup-content {
+            max-width: 160px;   
         }
         .info{
             left: 40px;
@@ -152,9 +157,6 @@
         label{
             font-size: 1.0em;
             font-weight: bold;
-        }
-        .leaflet-popup-content {
-            max-width: 160px;   
         }
         #chart-container { 
             position: absolute;
