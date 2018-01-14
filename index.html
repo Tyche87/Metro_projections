@@ -30,7 +30,6 @@
             padding: 0;
             background: whitesmoke;
             font-family: Lato, sans-serif;
-            color: #0D0000;
         }
 
         #map {
@@ -170,18 +169,19 @@
         .bar{
             fill: steelblue;
         }
-
+        
         .chart div {
             font: 10px sans-serif;
             background-color: rgba(15,86,226,0.8);
-            text-align: right;
-            padding: 3px;
-            margin: 1px;
-            width: 100px;
+            text-align: left;
+            padding: 4px;
+            margin: 5px 0px 5px 0px;
+            width: 180px;
+            height: 12px;
             color: white;
+            opacity: .3;
         }
-
-
+        
     </style>
 </head>
 
@@ -532,16 +532,30 @@
             var bars = d3.select(".chart")
                 .selectAll("div")
                 .data(data)
-                .enter().append("div")
+                .enter()
+                .append("div")
                 .style("width", function(d) { return x(d) + "px"; })
-                .text(function(d) { return d; });
+                .text(function(d) { return d ; })
+                .transition()
+                    .style("width", function(d) { return x(d) + "px"; })
+                    .style("opacity", ".9")
+                    .style("color", "white")
+                    .style("margin", "2px 0px 2px 0px")
+                    .style("height", "15px")
+                    //.style("font", "20px sans-serif")
+                    .delay(1000)
+                
+                
+                
+        
+                
 
         };
         
         function updateChart(layerData){
             
             var data = layerData
-                console.log(data)
+            //    console.log(data)
                     
                 
             var x = d3.scale.linear()
@@ -555,10 +569,8 @@
             d3.select(".chart")
                 .style("width", function(d) { return x(d) + "px"; })
                 .text(function(d) { return d; })
-                
-                
-
-                
+    
+                        
                 
             drawChart(data)    
                 
